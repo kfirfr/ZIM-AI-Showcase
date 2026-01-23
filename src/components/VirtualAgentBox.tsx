@@ -27,11 +27,13 @@ export const VirtualAgentBox = () => {
                 setMessages(prev => [...prev, conversation[indexRef.current]]);
                 indexRef.current++;
             } else {
-                // Loop back
+                // Loop back - MUST clear interval first
+                if (intervalRef.current) clearInterval(intervalRef.current);
                 setTimeout(() => {
                     setMessages([]);
                     indexRef.current = 0;
-                }, 2000);
+                    runSimulation(); // Restart simulation
+                }, 3000);
             }
         }, 1500);
     };
