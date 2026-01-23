@@ -109,8 +109,8 @@ export const EvalBox = () => {
                             </div>
 
                             <div className="space-y-3 opacity-50 relative">
-                                {[1, 2, 3, 4, 5, 6].map((i) => (
-                                    <div key={i} className="h-2 bg-slate-600 rounded-full w-full" style={{ width: `${Math.random() * 40 + 60}%` }} />
+                                {[60, 80, 70, 90, 65, 75].map((width, i) => (
+                                    <div key={i} className="h-2 bg-slate-600 rounded-full" style={{ width: `${width}%` }} />
                                 ))}
                             </div>
 
