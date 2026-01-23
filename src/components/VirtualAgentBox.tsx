@@ -76,14 +76,14 @@ export const VirtualAgentBox = () => {
                                 <span className="text-xs text-white">U</span>
                             </div>
                         )}
-                        <div className={`max-w-[75%] px-4 py-2 rounded-lg ${msg.role === 'bot' ? 'bg-white/10 border border-white/20' : 'bg-blue-600'}`}>
-                            <p className="text-sm text-white">{msg.text}</p>
+                        <div className={`max-w-[75%] px-4 py-3 rounded-lg ${msg.role === 'bot' ? 'bg-white/10 border border-white/20' : 'bg-blue-600'}`}>
+                            <p className="text-base text-white leading-relaxed">{msg.text}</p>
                         </div>
                     </div>
                 ))}
                 {messages.length === 0 && state === 'idle' && (
-                    <div className="flex items-center justify-center h-full text-slate-600 text-sm">
-                        Ready to chat
+                    <div className="flex items-center justify-center h-full text-slate-500 text-base font-medium">
+                        💬 Click Play to start conversation
                     </div>
                 )}
             </div>

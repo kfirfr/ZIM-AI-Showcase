@@ -77,7 +77,7 @@ export const KnowledgeAIBox = () => {
                 <div className="w-1/2 bg-black/20 p-4 border-r border-white/5">
                     <div className="text-xs text-slate-400 uppercase tracking-wider mb-3">Agent Query</div>
                     <div className="bg-white/5 border border-white/10 rounded-lg p-3 min-h-[60px] flex items-center">
-                        <p className="text-sm text-white">
+                        <p className="text-base text-white leading-relaxed">
                             {query && (
                                 <>
                                     <span className="text-slate-500">Searching: </span>
@@ -101,12 +101,12 @@ export const KnowledgeAIBox = () => {
                                 <div className="flex items-start gap-2">
                                     <FileText size={14} className="text-slate-400 flex-shrink-0 mt-0.5" />
                                     <div className="flex-1 min-w-0">
-                                        <div className="text-xs text-white font-semibold truncate">{article.title}</div>
+                                        <div className="text-sm text-white font-semibold truncate">{article.title}</div>
                                         <div className="flex items-center gap-2 mt-1">
                                             <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
                                                 <div className="h-full bg-zim-teal rounded-full" style={{ width: `${article.score}%` }} />
                                             </div>
-                                            <span className="text-[10px] text-zim-teal font-bold">{article.score}%</span>
+                                            <span className="text-xs text-zim-teal font-bold">{article.score}%</span>
                                         </div>
                                     </div>
                                 </div>

@@ -80,10 +80,10 @@ export const ProactiveEngagementBox = () => {
                                     {/* Content */}
                                     <div className="flex-1 pt-1">
                                         <div className="flex items-center gap-2 mb-1">
-                                            <span className="text-xs text-slate-500 font-mono">{event.time}</span>
-                                            <span className="text-sm font-bold text-white">{event.label}</span>
+                                            <span className="text-sm text-slate-400 font-mono font-semibold">{event.time}</span>
+                                            <span className="text-base font-bold text-white">{event.label}</span>
                                         </div>
-                                        <p className="text-xs text-slate-400">{event.desc}</p>
+                                        <p className="text-sm text-slate-300 leading-relaxed">{event.desc}</p>
                                     </div>
                                 </motion.div>
                             ))}

@@ -20,15 +20,17 @@ export const SimulationControls: React.FC<SimulationControlsProps> = ({
 }) => {
     return (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/20">
-            {/* Play/Pause Button */}
+            {/* Play/Resume Button */}
             {state !== "playing" ? (
                 <button
                     onClick={onPlay}
-                    className="group flex items-center gap-2 px-4 py-2 bg-zim-teal/20 hover:bg-zim-teal/30 rounded-full transition-all"
+                    className="group relative flex items-center gap-2 px-5 py-2.5 rounded-full transition-all overflow-hidden"
                     aria-label="Play simulation"
                 >
-                    <Play size={16} className="text-zim-teal" fill="currentColor" />
-                    <span className="text-xs font-bold text-zim-teal uppercase tracking-wide">
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#60a5fa] via-[#34d399] via-[#a78bfa] to-[#fb923c] opacity-30" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#60a5fa] via-[#34d399] via-[#a78bfa] to-[#fb923c] opacity-0 group-hover:opacity-50 transition-opacity" />
+                    <Play size={16} className="relative z-10 text-white" fill="currentColor" />
+                    <span className="relative z-10 text-xs font-bold text-white uppercase tracking-wide">
                         {state === "idle" ? "Play" : "Resume"}
                     </span>
                 </button>

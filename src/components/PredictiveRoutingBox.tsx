@@ -64,11 +64,11 @@ export const PredictiveRoutingBox = () => {
                                     <span className="text-sm font-bold text-gen-orange">LG</span>
                                 </div>
                                 <div>
-                                    <div className="text-sm font-bold text-white">{currentStep?.customer}</div>
-                                    <div className="text-xs text-slate-500">Incoming Request</div>
+                                    <div className="text-base font-bold text-white">{currentStep?.customer}</div>
+                                    <div className="text-sm text-slate-400">Incoming Request</div>
                                 </div>
                             </div>
-                            <div className="text-sm text-slate-300 italic">{currentStep?.query}</div>
+                            <div className="text-base text-slate-200 italic leading-relaxed">{currentStep?.query}</div>
                         </div>
 
                         {/* AI Analysis */}
@@ -80,8 +80,8 @@ export const PredictiveRoutingBox = () => {
                             >
                                 <div className="w-px h-12 bg-zim-teal/50" />
                                 <div className="flex-1 bg-zim-teal/10 border border-zim-teal/30 rounded-lg p-3">
-                                    <div className="text-xs text-zim-teal font-bold mb-1">AI Intent Detection</div>
-                                    <div className="text-sm text-white">{currentStep.intent}</div>
+                                    <div className="text-sm text-zim-teal font-bold mb-1.5 tracking-wide">AI Intent Detection</div>
+                                    <div className="text-base text-white font-medium">{currentStep.intent}</div>
                                 </div>
                             </motion.div>
                         )}
@@ -99,8 +99,8 @@ export const PredictiveRoutingBox = () => {
                                         <span className="text-xs text-emerald-400">A</span>
                                     </div>
                                     <div>
-                                        <div className="text-xs text-emerald-400 font-bold">Routed To:</div>
-                                        <div className="text-sm text-white font-semibold">{currentStep.agent}</div>
+                                        <div className="text-sm text-emerald-400 font-bold mb-0.5">Routed To:</div>
+                                        <div className="text-base text-white font-semibold">{currentStep.agent}</div>
                                     </div>
                                 </div>
                             </motion.div>

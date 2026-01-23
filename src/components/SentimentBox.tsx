@@ -79,7 +79,7 @@ export const SentimentBox = () => {
                 </div>
 
                 <div className="w-[40%] bg-[#0f172a]/50 p-3 space-y-3 overflow-hidden flex flex-col relative">
-                    <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest text-center mb-2">Live Tags</div>
+                    <div className="text-xs font-bold text-slate-400 uppercase tracking-widest text-center mb-3">Live AI Analysis</div>
                     {tags.map((tag, i) => {
                         const Icon = TagIcons[tag.i] || Zap;
                         return (

@@ -83,7 +83,7 @@ export const SummaryBox = () => {
 
                 {phase === 'process' && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 z-20 backdrop-blur-sm animate-glitch-skew">
-                        <div className="text-emerald-400 font-mono text-xl font-bold">COMPRESSING...</div>
+                        <div className="text-emerald-400 font-mono text-2xl font-bold tracking-wider">ANALYZING CONVERSATION...</div>
                         <div className="w-48 h-1 bg-gray-800 mt-4 rounded-full overflow-hidden">
                             <div className="h-full bg-emerald-500 animate-scan-sweep"></div>
                         </div>
@@ -95,20 +95,20 @@ export const SummaryBox = () => {
                         <div className="w-full bg-white/5 border border-emerald-500/30 rounded-xl p-6 shadow-[0_0_40px_rgba(16,185,129,0.1)]">
                             <div className="flex items-center gap-2 mb-4">
                                 <div className="p-1.5 bg-emerald-500 rounded text-black"><CheckSquare size={16} /></div>
-                                <span className="text-xs font-bold text-emerald-400 tracking-wider uppercase">CRM Summary Generated</span>
+                                <span className="text-sm font-bold text-emerald-400 tracking-wider uppercase">AI Summary Generated</span>
                             </div>
                             <div className="space-y-4">
                                 <div>
-                                    <div className="text-[10px] text-slate-500 uppercase font-bold mb-1">Issue</div>
-                                    <div className="text-sm text-white">Dispute on <span className="text-blue-400">Invoice #992</span> due to Port Closure.</div>
+                                    <div className="text-xs text-slate-400 uppercase font-bold mb-1.5 tracking-wider">Issue Identified</div>
+                                    <div className="text-base text-white leading-relaxed">Container detention dispute on <span className="text-blue-400 font-semibold">Invoice #992</span> due to unexpected Port Closure delays.</div>
                                 </div>
                                 <div>
-                                    <div className="text-[10px] text-slate-500 uppercase font-bold mb-1">Outcome</div>
-                                    <div className="text-sm text-white">Logs verified. Fee waiver <span className="text-emerald-400">Approved</span>.</div>
+                                    <div className="text-xs text-slate-400 uppercase font-bold mb-1.5 tracking-wider">Resolution</div>
+                                    <div className="text-base text-white leading-relaxed">Port closure logs verified. Detention fee waiver <span className="text-emerald-400 font-semibold">Approved</span> by system.</div>
                                 </div>
                                 <div className="pt-3 border-t border-white/10 flex justify-between items-center">
-                                    <div className="text-[10px] text-slate-500">Action: Credit Note Issued</div>
-                                    <div className="px-2 py-1 bg-emerald-500/20 text-emerald-400 text-[9px] rounded font-bold">SAVED 4 MINS</div>
+                                    <div className="text-sm text-slate-400">Action: Credit Note Issued</div>
+                                    <div className="px-3 py-1.5 bg-emerald-500/20 text-emerald-400 text-xs rounded-md font-bold tracking-wide">⚡ SAVED 4 MINS</div>
                                 </div>
                             </div>
                         </div>

@@ -59,7 +59,7 @@ export const EvalBox = () => {
                 <div className="flex-1 space-y-2 relative overflow-y-auto scrollbar-hide">
                     {criteria.map((c, i) => (
                         <div key={i} className={`flex justify-between items-center p-2 rounded border transition-all duration-300 ${i === activeIdx ? 'bg-purple-500/20 border-purple-500 scale-[1.02] shadow-lg' : i < activeIdx ? 'bg-black/40 border-slate-800 opacity-60' : 'bg-transparent border-transparent text-slate-600'}`}>
-                            <span className="text-[10px] font-bold uppercase tracking-wide text-slate-300">{c}</span>
+                            <span className="text-sm font-bold uppercase tracking-wide text-slate-200">{c}</span>
                             {i < activeIdx ? <Check size={14} className="text-green-400" /> : i === activeIdx ? <Loader2 size={14} className="text-purple-400 animate-spin" /> : null}
                         </div>
                     ))}
@@ -69,7 +69,7 @@ export const EvalBox = () => {
                         <svg className="w-full h-full transform -rotate-90"><circle cx="32" cy="32" r="28" fill="none" stroke="#1e293b" strokeWidth="4" /><circle cx="32" cy="32" r="28" fill="none" stroke="#a855f7" strokeWidth="4" strokeDasharray={`${score * 1.75} 360`} className="transition-all duration-500 ease-out" /></svg>
                         <span className="absolute text-lg font-black text-white">{Math.floor(score)}</span>
                     </div>
-                    <div className="text-[9px] font-bold text-slate-500 uppercase text-center">Quality Score</div>
+                    <div className="text-xs font-bold text-slate-400 uppercase text-center tracking-wider">Quality Score</div>
                 </div>
             </div>
         </div>
