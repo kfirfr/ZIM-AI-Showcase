@@ -1,86 +1,85 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { LiveChatInterface } from './LiveChatInterface';
-import { CheckSquare, Play, RefreshCw } from 'lucide-react';
+import { SimulationControls, SimulationState } from './SimulationControls';
+import { CheckSquare } from 'lucide-react';
 
 export const SummaryBox = () => {
-    const [isPlaying, setIsPlaying] = useState(false);
+    const [state, setState] = useState<SimulationState>('idle');
     const [phase, setPhase] = useState<'idle' | 'ingest' | 'process' | 'result'>('idle');
     const [messages, setMessages] = useState<{ role: string, text: string }[]>([]);
+    const intervalRef = useRef<NodeJS.Timeout | null>(null);
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const fullConversation = [
-        { role: "Agent", text: "ZIM Support, Kfir speaking." },
+        { role: "Agent", text: "ZIM Support, Kfir speaking. How can I assist?" },
         { role: "Cust", text: "Hi, I have a major issue with Invoice 992." },
         { role: "Agent", text: "I see the invoice. What is the discrepancy?" },
-        { role: "Cust", text: "You charged detention fees but the port was closed!" },
-        { role: "Agent", text: "Checking logs... You are correct." },
-        { role: "Cust", text: "Can you remove it?" },
-        { role: "Agent", text: "Sending request... Approved." },
-        { role: "Cust", text: "Great, thank you." }
+        { role: "Cust", text: "You charged detention fees but the port was closed that day!" },
+        { role: "Agent", text: "Let me check our port logs... One moment please." },
+        { role: "Cust", text: "This is urgent. My CFO is waiting." },
+        { role: "Agent", text: "I understand. Checking logs now... You are correct." },
+        { role: "Cust", text: "Can you remove the fee?" },
+        { role: "Agent", text: "Sending waiver request to billing... Approved!" },
+        { role: "Cust", text: "Great, thank you for resolving this quickly." }
     ];
 
+    const runSimulation = () => {
+        setPhase('ingest');
+        setMessages([]);
+
+        let msgIdx = 0;
+        intervalRef.current = setInterval(() => {
+            if (msgIdx < fullConversation.length) {
+                setMessages(prev => [...prev, fullConversation[msgIdx]]);
+                msgIdx++;
+            } else {
+                if (intervalRef.current) clearInterval(intervalRef.current);
+                setPhase('process');
+                timeoutRef.current = setTimeout(() => {
+                    setPhase('result');
+                    timeoutRef.current = setTimeout(() => {
+                        // Loop back to start
+                        runSimulation();
+                    }, 4000);
+                }, 2500);
+            }
+        }, 800);
+    };
+
     useEffect(() => {
-        if (!isPlaying) { setPhase('idle'); setMessages([]); return; }
-
-        let timeout: NodeJS.Timeout | undefined;
-        const loop = () => {
-            setPhase('ingest');
+        if (state === 'playing') {
+            runSimulation();
+        } else if (state === 'paused') {
+            // Clear intervals but keep state
+            if (intervalRef.current) clearInterval(intervalRef.current);
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        } else if (state === 'idle') {
+            // Reset everything
+            if (intervalRef.current) clearInterval(intervalRef.current);
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+            setPhase('idle');
             setMessages([]);
+        }
 
-            let msgIdx = 0;
-            const typeInterval = setInterval(() => {
-                if (msgIdx < fullConversation.length) {
-                    setMessages(prev => [...prev, fullConversation[msgIdx]]);
-                    msgIdx++;
-                } else {
-                    clearInterval(typeInterval);
-                    setPhase('process');
-                    setTimeout(() => {
-                        setPhase('result');
-                        // Auto replay or stop? Let's stop after one cycle for better UX in grid
-                        setIsPlaying(false);
-                    }, 2000);
-                }
-            }, 600);
+        return () => {
+            if (intervalRef.current) clearInterval(intervalRef.current);
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
         };
-
-        loop();
-        return () => { if (timeout) clearTimeout(timeout); };
-    }, [isPlaying]);
+    }, [state]);
 
     return (
         <div className="relative w-full h-full min-h-[320px] bg-slate-950/50 flex flex-col">
-            {/* Controls Overlay */}
-            {!isPlaying && phase === 'idle' && (
-                <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/40 backdrop-blur-[1px]">
-                    <button
-                        onClick={() => setIsPlaying(true)}
-                        className="group relative flex items-center gap-3 px-6 py-3 bg-zim-teal/10 hover:bg-zim-teal/20 border border-zim-teal/50 rounded-full transition-all hover:scale-105"
-                    >
-                        <div className="w-8 h-8 rounded-full bg-zim-teal flex items-center justify-center text-black">
-                            <Play size={14} fill="currentColor" />
-                        </div>
-                        <span className="text-zim-teal font-bold text-sm tracking-wide">RUN SIMULATION</span>
-                    </button>
-                </div>
-            )}
-
-            {/* Replay Overlay */}
-            {!isPlaying && phase === 'result' && (
-                <div className="absolute bottom-4 right-4 z-50">
-                    <button
-                        onClick={() => setIsPlaying(true)}
-                        className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all"
-                    >
-                        <RefreshCw size={16} />
-                    </button>
-                </div>
-            )}
+            <SimulationControls
+                state={state}
+                onPlay={() => setState('playing')}
+                onPause={() => setState('paused')}
+                onStop={() => setState('idle')}
+            />
 
             <div className="flex-1 relative overflow-hidden flex flex-col p-4">
-                {phase === 'ingest' && <LiveChatInterface messages={messages} />}
-                {phase === 'idle' && <LiveChatInterface messages={[]} />} {/* Empty state placeholder */}
+                {(phase === 'ingest' || phase === 'idle') && <LiveChatInterface messages={messages} />}
 
                 {phase === 'process' && (
                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 z-20 backdrop-blur-sm animate-glitch-skew">

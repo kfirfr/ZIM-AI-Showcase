@@ -2,6 +2,7 @@
 
 import React, { useRef } from "react";
 import { motion, useMotionTemplate, useMotionValue } from "framer-motion";
+import { AnimatedTitle } from "./AnimatedTitle";
 
 interface FeatureCardProps {
     title: string;
@@ -49,9 +50,9 @@ export const FeatureCard = ({ title, description, badge, children }: FeatureCard
                     <div className="w-8 h-1 rounded bg-gradient-to-r from-zim-teal to-transparent opacity-50" />
                 </div>
 
-                <h3 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400 mb-2">
+                <AnimatedTitle className="text-2xl mb-2" as="h3">
                     {title}
-                </h3>
+                </AnimatedTitle>
 
                 <p className="text-slate-400 leading-relaxed mb-6 max-w-sm">
                     {description}
