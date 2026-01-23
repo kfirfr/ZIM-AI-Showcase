@@ -1,70 +1,66 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { Check, Loader2, Play, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { SimulationControls, SimulationState } from './SimulationControls';
+import { Check, Loader2 } from 'lucide-react';
 
 export const EvalBox = () => {
-    const [isPlaying, setIsPlaying] = useState(false);
+    const [state, setState] = useState<SimulationState>('idle');
     const [activeIdx, setActiveIdx] = useState(-1);
     const [score, setScore] = useState(0);
+    const intervalRef = useRef<NodeJS.Timeout | null>(null);
+    const currentStepRef = useRef(0);
+
     const criteria = ["Greeting Protocol", "Identity Verified", "Active Listening", "Empathy Shown", "Correct Information", "Hold Time Valid", "Solution Confirmed", "Closing Script"];
 
+    const runSimulation = () => {
+        intervalRef.current = setInterval(() => {
+            const step = currentStepRef.current % (criteria.length + 2); // +2 for pause before restart
+
+            if (step < criteria.length) {
+                setActiveIdx(step);
+                setScore(prev => Math.min((step + 1) * 12.5, 100));
+            } else {
+                // Pause at completion before looping
+                setActiveIdx(criteria.length - 1);
+            }
+
+            currentStepRef.current++;
+        }, 500);
+    };
+
     useEffect(() => {
-        if (!isPlaying) {
-            // Don't reset immediately if we want to show result, but if replaying yes.
-            // Logic handled by start button
-            return;
+        if (state === 'playing') {
+            runSimulation();
+        } else if (state === 'paused') {
+            if (intervalRef.current) clearInterval(intervalRef.current);
+        } else if (state === 'idle') {
+            if (intervalRef.current) clearInterval(intervalRef.current);
+            setActiveIdx(-1);
+            setScore(0);
+            currentStepRef.current = 0;
         }
 
-        setActiveIdx(-1);
-        setScore(0);
-
-        let idx = 0;
-        const interval = setInterval(() => {
-            setActiveIdx(idx);
-            setScore(prev => Math.min(prev + 12.5, 100));
-            idx++;
-            if (idx > criteria.length - 1) {
-                clearInterval(interval);
-                setIsPlaying(false);
-            }
-        }, 400); // Faster
-        return () => clearInterval(interval);
-    }, [isPlaying]);
+        return () => {
+            if (intervalRef.current) clearInterval(intervalRef.current);
+        };
+    }, [state]);
 
     return (
         <div className="relative w-full h-full min-h-[320px] bg-slate-950/50 flex flex-col">
-            {!isPlaying && score === 0 && (
-                <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/40 backdrop-blur-[1px]">
-                    <button
-                        onClick={() => setIsPlaying(true)}
-                        className="group relative flex items-center gap-3 px-6 py-3 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/50 rounded-full transition-all hover:scale-105"
-                    >
-                        <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center text-white">
-                            <Play size={14} fill="currentColor" />
-                        </div>
-                        <span className="text-purple-400 font-bold text-sm tracking-wide">START AUDIT</span>
-                    </button>
-                </div>
-            )}
-
-            {!isPlaying && score > 0 && (
-                <div className="absolute bottom-4 right-4 z-50">
-                    <button
-                        onClick={() => setIsPlaying(true)}
-                        className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-all"
-                    >
-                        <RefreshCw size={16} />
-                    </button>
-                </div>
-            )}
+            <SimulationControls
+                state={state}
+                onPlay={() => setState('playing')}
+                onPause={() => setState('paused')}
+                onStop={() => setState('idle')}
+            />
 
             <div className="flex-1 bg-black/20 p-4 flex gap-4 relative">
                 <div className="flex-1 space-y-2 relative overflow-y-auto scrollbar-hide">
                     {criteria.map((c, i) => (
-                        <div key={i} className={`flex justify-between items-center p-2 rounded border transition-all duration-300 ${i === activeIdx ? 'bg-purple-500/20 border-purple-500 scale-[1.02] shadow-lg' : i < activeIdx || (!isPlaying && score > 0) ? 'bg-black/40 border-slate-800 opacity-60' : 'bg-transparent border-transparent text-slate-600'}`}>
+                        <div key={i} className={`flex justify-between items-center p-2 rounded border transition-all duration-300 ${i === activeIdx ? 'bg-purple-500/20 border-purple-500 scale-[1.02] shadow-lg' : i < activeIdx ? 'bg-black/40 border-slate-800 opacity-60' : 'bg-transparent border-transparent text-slate-600'}`}>
                             <span className="text-[10px] font-bold uppercase tracking-wide text-slate-300">{c}</span>
-                            {(i < activeIdx || (!isPlaying && score > 0)) ? <Check size={14} className="text-green-400" /> : i === activeIdx ? <Loader2 size={14} className="text-purple-400 animate-spin" /> : null}
+                            {i < activeIdx ? <Check size={14} className="text-green-400" /> : i === activeIdx ? <Loader2 size={14} className="text-purple-400 animate-spin" /> : null}
                         </div>
                     ))}
                 </div>
