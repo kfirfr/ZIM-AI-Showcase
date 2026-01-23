@@ -84,17 +84,15 @@ export const SimulationControls: React.FC<SimulationControlsProps> = ({
             )}
 
             {/* Stop/Reset Button */}
-            {state !== "idle" && (
-                <motion.button
-                    onClick={onStop}
-                    className="p-2 hover:bg-white/10 rounded-full transition-all"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                    aria-label="Stop and reset simulation"
-                >
-                    <RotateCcw size={16} className="text-slate-400 hover:text-white transition-colors" />
-                </motion.button>
-            )}
+            <motion.button
+                onClick={onStop}
+                className="p-2 hover:bg-white/10 rounded-full transition-all"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                aria-label="Stop and reset simulation"
+            >
+                <RotateCcw size={16} className="text-slate-400 hover:text-white transition-colors" />
+            </motion.button>
         </div>
     );
 };
