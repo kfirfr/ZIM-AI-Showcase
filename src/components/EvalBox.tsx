@@ -10,6 +10,7 @@ export const EvalBox = () => {
     const [phase, setPhase] = useState<"scanning" | "checking" | "scoring" | "complete">("scanning");
     const [checklistIndex, setChecklistIndex] = useState(0);
     const [score, setScore] = useState(0);
+    const containerRef = useRef<HTMLDivElement>(null);
 
     const checklist = [
         { id: 1, text: "Greeting & Verification", status: "pass" },
@@ -24,6 +25,11 @@ export const EvalBox = () => {
         let scoreInterval: NodeJS.Timeout;
 
         if (state === 'playing') {
+            if (containerRef.current) {
+                setTimeout(() => {
+                    containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            }
             const runSequence = async () => {
                 // Phase 1: Scanning
                 setPhase("scanning");
@@ -78,7 +84,7 @@ export const EvalBox = () => {
     }, [state]);
 
     return (
-        <div className="relative w-full h-full min-h-[400px] bg-slate-950/50 flex flex-col group overflow-hidden">
+        <div ref={containerRef} className="relative w-full h-full min-h-[400px] bg-slate-950/50 flex flex-col group overflow-hidden">
             <SimulationControls
                 state={state}
                 onPlay={() => setState('playing')}

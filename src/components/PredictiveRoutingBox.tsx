@@ -47,8 +47,15 @@ export const PredictiveRoutingBox = () => {
         }, 3000);
     };
 
+    const containerRef = useRef<HTMLDivElement>(null);
+
     useEffect(() => {
         if (state === 'playing') {
+            if (containerRef.current) {
+                setTimeout(() => {
+                    containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            }
             runSimulation();
         } else if (state === 'paused') {
             if (intervalRef.current) clearInterval(intervalRef.current);
@@ -65,7 +72,7 @@ export const PredictiveRoutingBox = () => {
     const currentStep = steps[step];
 
     return (
-        <div className="relative w-full h-full min-h-[450px] bg-gradient-to-br from-slate-950/80 to-slate-900/80 flex flex-col overflow-hidden">
+        <div ref={containerRef} className="relative w-full h-full min-h-[450px] bg-gradient-to-br from-slate-950/80 to-slate-900/80 flex flex-col overflow-hidden">
             <SimulationControls
                 state={state}
                 onPlay={() => setState('playing')}

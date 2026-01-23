@@ -34,8 +34,15 @@ export const TranslationBox = () => {
         }, 3500);
     };
 
+    const containerRef = useRef<HTMLDivElement>(null);
+
     useEffect(() => {
         if (state === 'playing') {
+            if (containerRef.current) {
+                setTimeout(() => {
+                    containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            }
             runSimulation();
         } else if (state === 'paused') {
             if (intervalRef.current) clearInterval(intervalRef.current);
@@ -51,7 +58,7 @@ export const TranslationBox = () => {
     const currentMsg = messages[msgIndex];
 
     return (
-        <div className="relative w-full h-full min-h-[400px] bg-slate-950/50 flex flex-col overflow-hidden">
+        <div ref={containerRef} className="relative w-full h-full min-h-[400px] bg-slate-950/50 flex flex-col overflow-hidden">
             <SimulationControls
                 state={state}
                 onPlay={() => setState('playing')}

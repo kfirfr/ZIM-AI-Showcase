@@ -118,8 +118,15 @@ export const SentimentBox = () => {
         }, 2500);
     };
 
+    const containerRef = useRef<HTMLDivElement>(null);
+
     useEffect(() => {
         if (state === 'playing') {
+            if (containerRef.current) {
+                setTimeout(() => {
+                    containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            }
             runSimulation();
         } else if (state === 'paused') {
             if (intervalRef.current) clearInterval(intervalRef.current);
@@ -136,7 +143,7 @@ export const SentimentBox = () => {
     }, [state]);
 
     return (
-        <div className="relative w-full h-full min-h-[400px] bg-gradient-to-br from-slate-950/80 to-slate-900/80 flex flex-col">
+        <div ref={containerRef} className="relative w-full h-full min-h-[400px] bg-gradient-to-br from-slate-950/80 to-slate-900/80 flex flex-col">
             <SimulationControls
                 state={state}
                 onPlay={() => setState('playing')}
@@ -163,8 +170,8 @@ export const SentimentBox = () => {
                                     className={`flex ${msg.role === 'customer' ? 'justify-end' : 'justify-start'}`}
                                 >
                                     <div className={`max-w-[85%] ${msg.role === 'agent'
-                                            ? 'bg-slate-800 text-slate-200 rounded-2xl rounded-bl-sm'
-                                            : 'bg-gradient-to-br from-blue-900/80 to-blue-800/80 text-white rounded-2xl rounded-br-sm'
+                                        ? 'bg-slate-800 text-slate-200 rounded-2xl rounded-bl-sm'
+                                        : 'bg-gradient-to-br from-blue-900/80 to-blue-800/80 text-white rounded-2xl rounded-br-sm'
                                         } px-4 py-3 shadow-lg`}>
                                         <div className="text-[10px] uppercase tracking-wider opacity-60 mb-1">
                                             {msg.role}

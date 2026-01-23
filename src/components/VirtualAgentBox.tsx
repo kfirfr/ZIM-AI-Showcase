@@ -58,8 +58,15 @@ export const VirtualAgentBox = () => {
         }, 14000);
     };
 
+    const containerRef = useRef<HTMLDivElement>(null);
+
     useEffect(() => {
         if (state === 'playing') {
+            if (containerRef.current) {
+                setTimeout(() => {
+                    containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            }
             runSimulation();
         } else if (state === 'paused') {
             // Complex to pause exact timeouts, for now just clearing restarts logic
@@ -74,7 +81,7 @@ export const VirtualAgentBox = () => {
     }, [state]);
 
     return (
-        <div className="relative w-full h-full min-h-[450px] bg-slate-950/50 flex flex-col overflow-hidden">
+        <div ref={containerRef} className="relative w-full h-full min-h-[450px] bg-slate-950/50 flex flex-col overflow-hidden">
             <SimulationControls
                 state={state}
                 onPlay={() => setState('playing')}
@@ -108,8 +115,8 @@ export const VirtualAgentBox = () => {
                                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                             >
                                 <div className={`max-w-[80%] p-3 rounded-2xl ${msg.role === 'user'
-                                        ? 'bg-blue-600 text-white rounded-br-sm'
-                                        : 'bg-slate-800 text-slate-200 rounded-bl-sm border border-white/5'
+                                    ? 'bg-blue-600 text-white rounded-br-sm'
+                                    : 'bg-slate-800 text-slate-200 rounded-bl-sm border border-white/5'
                                     }`}>
                                     <p className="text-sm">{msg.text}</p>
                                 </div>
