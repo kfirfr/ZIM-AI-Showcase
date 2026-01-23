@@ -23,7 +23,7 @@ export const SummaryBox = () => {
     useEffect(() => {
         if (!isPlaying) { setPhase('idle'); setMessages([]); return; }
 
-        let timeout: NodeJS.Timeout;
+        let timeout: NodeJS.Timeout | undefined;
         const loop = () => {
             setPhase('ingest');
             setMessages([]);
@@ -46,7 +46,7 @@ export const SummaryBox = () => {
         };
 
         loop();
-        return () => clearTimeout(timeout);
+        return () => { if (timeout) clearTimeout(timeout); };
     }, [isPlaying]);
 
     return (
