@@ -2,38 +2,56 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { SimulationControls, SimulationState } from './SimulationControls';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Languages, ArrowRightLeft, Globe } from 'lucide-react';
 
 export const TranslationBox = () => {
     const [state, setState] = useState<SimulationState>('idle');
-    const [isRevealed, setIsRevealed] = useState(false);
-    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const [msgIndex, setMsgIndex] = useState(0);
+    const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
+    const messages = [
+        {
+            original: { lang: "ES", text: "Hola, necesito ayuda con mi pedido." },
+            translated: { lang: "EN", text: "Hello, I need help with my order." },
+            detected: "Spanish Detected"
+        },
+        {
+            original: { lang: "ZH", text: "我的集装箱什么时候到达？" },
+            translated: { lang: "EN", text: "When will my container arrive?" },
+            detected: "Chinese (Simplified) Detected"
+        },
+        {
+            original: { lang: "FR", text: "C'est urgent, merci de répondre." },
+            translated: { lang: "EN", text: "It is urgent, please reply." },
+            detected: "French Detected"
+        }
+    ];
 
     const runSimulation = () => {
-        setIsRevealed(true);
-        // Loop back after completing
-        timeoutRef.current = setTimeout(() => {
-            setIsRevealed(false);
-            setTimeout(() => runSimulation(), 1000);
-        }, 4000);
+        intervalRef.current = setInterval(() => {
+            setMsgIndex(prev => (prev + 1) % messages.length);
+        }, 3500);
     };
 
     useEffect(() => {
         if (state === 'playing') {
             runSimulation();
         } else if (state === 'paused') {
-            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+            if (intervalRef.current) clearInterval(intervalRef.current);
         } else if (state === 'idle') {
-            if (timeoutRef.current) clearTimeout(timeoutRef.current);
-            setIsRevealed(false);
+            if (intervalRef.current) clearInterval(intervalRef.current);
+            setMsgIndex(0);
         }
-
         return () => {
-            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+            if (intervalRef.current) clearInterval(intervalRef.current);
         };
     }, [state]);
 
+    const currentMsg = messages[msgIndex];
+
     return (
-        <div className="relative w-full h-full min-h-[320px] bg-slate-950/50 flex flex-col group">
+        <div className="relative w-full h-full min-h-[400px] bg-slate-950/50 flex flex-col overflow-hidden">
             <SimulationControls
                 state={state}
                 onPlay={() => setState('playing')}
@@ -41,27 +59,60 @@ export const TranslationBox = () => {
                 onStop={() => setState('idle')}
             />
 
-            <div className="flex-1 p-0 relative overflow-hidden flex flex-col">
-                <div className="bg-[#1e293b]/50 p-2 flex justify-between items-center border-b border-white/5 z-20">
-                    <div className="flex gap-1.5"><div className="w-2 h-2 rounded-full bg-red-500/50"></div><div className="w-2 h-2 rounded-full bg-yellow-500/50"></div><div className="w-2 h-2 rounded-full bg-green-500/50"></div></div>
-                    <div className="text-xs text-slate-400 font-mono font-semibold">Input: THAI (Auto-Detect)</div>
+            <div className="flex-1 p-6 flex flex-col items-center justify-center relative">
+                {/* Background Globe Effect */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
+                    <Globe size={300} className="text-zim-teal/20 animate-spin-slow" />
                 </div>
-                <div className="flex-1 p-6 relative">
-                    <div className="space-y-4 opacity-50 blur-[0.5px]">
-                        <div className="flex gap-3"><div className="w-6 h-6 rounded-full bg-orange-500/20 text-xs flex items-center justify-center text-orange-400 font-bold">C</div><div className="bg-[#1e293b] p-3 rounded-xl rounded-tl-none text-sm text-slate-300">สวัสดีครับ ผมต้องการตรวจสอบสถานะตู้สินค้า ZIMU882</div></div>
-                        <div className="flex gap-3 flex-row-reverse"><div className="w-6 h-6 rounded-full bg-blue-500/20 text-[9px] flex items-center justify-center text-blue-400 font-bold">A</div><div className="bg-blue-600 p-3 rounded-xl rounded-tr-none text-xs text-white">ได้เลยครับ ขอเวลาตรวจสอบสักครู่ครับ</div></div>
-                        <div className="flex gap-3"><div className="w-6 h-6 rounded-full bg-orange-500/20 text-[9px] flex items-center justify-center text-orange-400 font-bold">C</div><div className="bg-[#1e293b] p-3 rounded-xl rounded-tl-none text-xs text-slate-300">มันล่าช้ามาก ผมกังวลเรื่องค่าใช้จ่าย</div></div>
-                        <div className="flex gap-3 flex-row-reverse"><div className="w-6 h-6 rounded-full bg-blue-500/20 text-[9px] flex items-center justify-center text-blue-400 font-bold">A</div><div className="bg-blue-600 p-3 rounded-xl rounded-tr-none text-xs text-white">ส่งเอกสารให้แล้วครับ</div></div>
-                    </div>
 
-                    <div className="absolute inset-0 p-6 space-y-4 bg-[#020617] z-10 transition-all duration-0" style={{ clipPath: isRevealed ? 'inset(0 0 0 0)' : 'inset(0 100% 0 0)', animation: isRevealed ? 'reveal-mask 3s linear forwards' : 'none' }}>
-                        <div className="flex gap-3"><div className="w-6 h-6 rounded-full bg-orange-500/20 text-xs flex items-center justify-center text-orange-400 font-bold">C</div><div className="bg-[#1e293b] p-3 rounded-xl rounded-tl-none text-sm text-white border border-orange-500/50"><strong>[EN]</strong> Hello, checking status of ZIMU882.</div></div>
-                        <div className="flex gap-3 flex-row-reverse"><div className="w-6 h-6 rounded-full bg-blue-500/20 text-[9px] flex items-center justify-center text-blue-400 font-bold">A</div><div className="bg-blue-600 p-3 rounded-xl rounded-tr-none text-xs text-white"><strong>[EN]</strong> Certainly. One moment please.</div></div>
-                        <div className="flex gap-3"><div className="w-6 h-6 rounded-full bg-orange-500/20 text-[9px] flex items-center justify-center text-orange-400 font-bold">C</div><div className="bg-[#1e293b] p-3 rounded-xl rounded-tl-none text-xs text-white border border-orange-500/50"><strong>[EN]</strong> It is late. Worried about costs.</div></div>
-                        <div className="flex gap-3 flex-row-reverse"><div className="w-6 h-6 rounded-full bg-blue-500/20 text-[9px] flex items-center justify-center text-blue-400 font-bold">A</div><div className="bg-blue-600 p-3 rounded-xl rounded-tr-none text-xs text-white"><strong>[EN]</strong> Documents have been sent.</div></div>
-                    </div>
-                    {isRevealed && <div className="absolute top-0 bottom-0 w-2 bg-cyan-400 shadow-[0_0_20px_rgba(34,211,238,1)] z-20 animate-scan-sweep" style={{ left: '0%', animationDuration: '3s', animationFillMode: 'forwards' }}></div>}
-                </div>
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={msgIndex}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 1.1 }}
+                        transition={{ duration: 0.5 }}
+                        className="w-full max-w-lg space-y-8"
+                    >
+                        {/* Source Message */}
+                        <div className="relative">
+                            <div className="absolute -top-3 left-4 bg-slate-800 px-3 py-1 rounded-full text-xs font-bold text-slate-400 border border-slate-700">
+                                Customer ({currentMsg.original.lang})
+                            </div>
+                            <div className="bg-slate-800/50 border border-white/10 rounded-2xl p-6 backdrop-blur-sm">
+                                <p className="text-xl text-white font-medium">{currentMsg.original.text}</p>
+                            </div>
+                        </div>
+
+                        {/* Translation Process */}
+                        <div className="flex items-center justify-center gap-4">
+                            <motion.div
+                                animate={{ rotate: 180 }}
+                                transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                                className="p-2 bg-zim-teal/20 rounded-full text-zim-teal"
+                            >
+                                <ArrowRightLeft size={24} />
+                            </motion.div>
+                            <motion.span
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="text-sm font-mono text-zim-teal font-bold tracking-wider"
+                            >
+                                {currentMsg.detected}
+                            </motion.span>
+                        </div>
+
+                        {/* Translated Message */}
+                        <div className="relative">
+                            <div className="absolute -top-3 right-4 bg-zim-teal/20 px-3 py-1 rounded-full text-xs font-bold text-zim-teal border border-zim-teal/30">
+                                Agent View ({currentMsg.translated.lang})
+                            </div>
+                            <div className="bg-zim-teal/5 border border-zim-teal/20 rounded-2xl p-6 backdrop-blur-sm shadow-[0_0_30px_rgba(45,212,191,0.1)]">
+                                <p className="text-xl text-white font-medium">{currentMsg.translated.text}</p>
+                            </div>
+                        </div>
+                    </motion.div>
+                </AnimatePresence>
             </div>
         </div>
     );

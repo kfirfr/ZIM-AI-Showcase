@@ -37,7 +37,7 @@ export default function Home() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                     <div className="space-y-12 mt-12">
                         <FeatureCard
-                            title="Auto-Summarization"
+                            title="AI Summarization"
                             description="Instantly condense complex customer interactions into structured CRM notes. Save 4+ minutes per case."
                             badge="Efficiency"
                         >
@@ -55,7 +55,7 @@ export default function Home() {
 
                     <div className="space-y-12">
                         <FeatureCard
-                            title="Sentiment Analysis"
+                            title="Speech & Text Analytics"
                             description="Detect customer emotion and intent in real-time to guide agents and prevent escalations."
                             badge="Intelligence"
                         >

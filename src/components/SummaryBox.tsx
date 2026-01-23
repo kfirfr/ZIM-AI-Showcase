@@ -25,49 +25,61 @@ export const SummaryBox = () => {
         { role: "Cust", text: "Great, thank you for resolving this quickly." }
     ];
 
-    const runSimulation = () => {
+    const runSimulation = React.useCallback(() => {
+        // Clear any existing timers first
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
         setPhase('ingest');
         setMessages([]);
 
         let msgIdx = 0;
+
+        // Slower message speed (1.5s per message)
         intervalRef.current = setInterval(() => {
             if (msgIdx < fullConversation.length) {
                 setMessages(prev => [...prev, fullConversation[msgIdx]]);
                 msgIdx++;
             } else {
+                // Conversation complete
                 if (intervalRef.current) clearInterval(intervalRef.current);
+
+                // Move to processing phase
                 setPhase('process');
+
+                // Slower processing time (3.5s) to allow user to see "Analyzing"
                 timeoutRef.current = setTimeout(() => {
                     setPhase('result');
+
+                    // Longer result view time (6s) before restarting
                     timeoutRef.current = setTimeout(() => {
-                        // Loop back to start
+                        // Restart smoothly
                         runSimulation();
-                    }, 4000);
-                }, 2500);
+                    }, 6000);
+                }, 3500);
             }
-        }, 800);
-    };
+        }, 1500);
+    }, []);
 
     useEffect(() => {
         if (state === 'playing') {
             runSimulation();
-        } else if (state === 'paused') {
-            // Clear intervals but keep state
+        } else {
+            // Stop everything if paused or idle
             if (intervalRef.current) clearInterval(intervalRef.current);
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
-        } else if (state === 'idle') {
-            // Reset everything
-            if (intervalRef.current) clearInterval(intervalRef.current);
-            if (timeoutRef.current) clearTimeout(timeoutRef.current);
-            setPhase('idle');
-            setMessages([]);
+
+            if (state === 'idle') {
+                setPhase('idle');
+                setMessages([]);
+            }
         }
 
         return () => {
             if (intervalRef.current) clearInterval(intervalRef.current);
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
         };
-    }, [state]);
+    }, [state, runSimulation]);
 
     return (
         <div className="relative w-full h-full min-h-[320px] bg-slate-950/50 flex flex-col">

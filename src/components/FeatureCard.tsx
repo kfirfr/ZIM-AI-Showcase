@@ -23,7 +23,7 @@ export const FeatureCard = ({ title, description, badge, children }: FeatureCard
 
     return (
         <motion.div
-            className="group relative rounded-2xl border border-white/10 bg-slate-900/40 px-8 py-10 shadow-2xl overflow-hidden backdrop-blur-xl transition-all hover:scale-[1.02]"
+            className="group relative rounded-2xl border border-white/10 bg-slate-900/40 px-8 py-10 shadow-2xl backdrop-blur-xl transition-all hover:scale-[1.02] flex flex-col"
             onMouseMove={handleMouseMove}
             whileHover={{ borderColor: "rgba(45, 212, 191, 0.4)" }}
         >
@@ -58,7 +58,8 @@ export const FeatureCard = ({ title, description, badge, children }: FeatureCard
                     {description}
                 </p>
 
-                <div className="mt-auto rounded-lg border border-white/5 bg-black/20 overflow-hidden relative min-h-[300px]">
+                {/* Simulation Container - Auto Height */}
+                <div className="mt-auto rounded-lg border border-white/5 bg-black/20 overflow-hidden relative w-full h-auto min-h-[300px]">
                     {children}
                 </div>
             </div>

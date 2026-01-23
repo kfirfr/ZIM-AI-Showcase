@@ -2,60 +2,79 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { SimulationControls, SimulationState } from './SimulationControls';
-import { Bot } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Bot, MoreHorizontal, Sparkles, Send } from 'lucide-react';
+
+interface ChatMessage {
+    role: 'bot' | 'user';
+    text: string;
+}
 
 export const VirtualAgentBox = () => {
     const [state, setState] = useState<SimulationState>('idle');
-    const [messages, setMessages] = useState<{ role: 'bot' | 'user', text: string }[]>([]);
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const [isTyping, setIsTyping] = useState(false);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
-    const indexRef = useRef(0);
+    const stepRef = useRef(0);
 
-    const conversation = [
-        { role: 'bot' as const, text: 'Hi! I\'m ZIM Assistant. How can I help?' },
-        { role: 'user' as const, text: 'Where is container ZIMU7733?' },
-        { role: 'bot' as const, text: 'Let me check that for you...' },
-        { role: 'bot' as const, text: 'Container ZIMU7733 is currently at Port of Los Angeles. ETA to destination: Jan 28, 2026.' },
-        { role: 'user' as const, text: 'Can I get the bill of lading?' },
-        { role: 'bot' as const, text: 'I\'ve sent the document to your email. Anything else?' },
-        { role: 'user' as const, text: 'No, thank you!' },
-        { role: 'bot' as const, text: 'You\'re welcome! Have a great day! 🚢' },
+    const scenario = [
+        { role: 'user', text: "Can I change the destination of my shipment?", delay: 1000 },
+        { role: 'bot', text: "I can help with that. Please provide your Booking Reference Number.", delay: 2000 },
+        { role: 'user', text: "It's ZIMU98765432.", delay: 3500 },
+        { role: 'bot', text: "Checking shipment status...", delay: 4500, action: true }, // Internal thought/action
+        { role: 'bot', text: "The shipment is currently at Singapore. COD (Change of Destination) request has been initiated. A fee of $150 applies. Confirm?", delay: 6500 },
+        { role: 'user', text: "Yes, please proceed.", delay: 8500 },
+        { role: 'bot', text: "Request processed successfully. You will receive a confirmation email shortly.", delay: 10000 },
     ];
 
     const runSimulation = () => {
-        intervalRef.current = setInterval(() => {
-            if (indexRef.current < conversation.length) {
-                setMessages(prev => [...prev, conversation[indexRef.current]]);
-                indexRef.current++;
-            } else {
-                // Loop back - MUST clear interval first
-                if (intervalRef.current) clearInterval(intervalRef.current);
-                setTimeout(() => {
-                    setMessages([]);
-                    indexRef.current = 0;
-                    runSimulation(); // Restart simulation
-                }, 3000);
-            }
-        }, 1500);
+        let currentTime = 0;
+
+        scenario.forEach((step) => {
+            const timeout = setTimeout(() => {
+                if (step.action) {
+                    setIsTyping(true);
+                    setTimeout(() => setIsTyping(false), 1500);
+                } else {
+                    if (step.role === 'bot') {
+                        setIsTyping(true);
+                        setTimeout(() => {
+                            setIsTyping(false);
+                            setMessages(prev => [...prev, { role: 'bot', text: step.text }]);
+                        }, 1000);
+                    } else {
+                        setMessages(prev => [...prev, { role: 'user', text: step.text }]);
+                    }
+                }
+            }, step.delay);
+
+            // Track timeouts to clear if needed (simplification: just clearing intervalRef in real usage)
+        });
+
+        // Loop reset (simple version: clear and restart after max delay + buffer)
+        intervalRef.current = setTimeout(() => {
+            setMessages([]);
+            runSimulation();
+        }, 14000);
     };
 
     useEffect(() => {
         if (state === 'playing') {
             runSimulation();
         } else if (state === 'paused') {
-            if (intervalRef.current) clearInterval(intervalRef.current);
+            // Complex to pause exact timeouts, for now just clearing restarts logic
         } else if (state === 'idle') {
-            if (intervalRef.current) clearInterval(intervalRef.current);
+            if (intervalRef.current) clearTimeout(intervalRef.current);
             setMessages([]);
-            indexRef.current = 0;
+            setIsTyping(false);
         }
-
         return () => {
-            if (intervalRef.current) clearInterval(intervalRef.current);
+            if (intervalRef.current) clearTimeout(intervalRef.current);
         };
     }, [state]);
 
     return (
-        <div className="relative w-full h-full min-h-[320px] bg-slate-950/50 flex flex-col">
+        <div className="relative w-full h-full min-h-[450px] bg-slate-950/50 flex flex-col overflow-hidden">
             <SimulationControls
                 state={state}
                 onPlay={() => setState('playing')}
@@ -63,29 +82,66 @@ export const VirtualAgentBox = () => {
                 onStop={() => setState('idle')}
             />
 
-            <div className="flex-1 p-4 overflow-y-auto space-y-3">
-                {messages.map((msg, i) => (
-                    <div key={i} className={`flex gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                        {msg.role === 'bot' && (
-                            <div className="w-8 h-8 rounded-full bg-zim-teal/20 border border-zim-teal flex items-center justify-center flex-shrink-0">
-                                <Bot size={16} className="text-zim-teal" />
-                            </div>
-                        )}
-                        {msg.role === 'user' && (
-                            <div className="w-8 h-8 rounded-full bg-slate-600/50 flex items-center justify-center flex-shrink-0">
-                                <span className="text-xs text-white">U</span>
-                            </div>
-                        )}
-                        <div className={`max-w-[75%] px-4 py-3 rounded-lg ${msg.role === 'bot' ? 'bg-white/10 border border-white/20' : 'bg-blue-600'}`}>
-                            <p className="text-base text-white leading-relaxed">{msg.text}</p>
+            <div className="flex-1 p-4 flex flex-col">
+                {/* Header */}
+                <div className="flex items-center gap-3 border-b border-white/10 pb-4 mb-4">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-zim-teal to-blue-500 flex items-center justify-center shadow-lg shadow-zim-teal/20">
+                        <Bot className="text-white" size={24} />
+                    </div>
+                    <div>
+                        <div className="font-bold text-white">ZIM Virtual Assistant</div>
+                        <div className="flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                            <span className="text-xs text-slate-400">Online 24/7</span>
                         </div>
                     </div>
-                ))}
-                {messages.length === 0 && state === 'idle' && (
-                    <div className="flex items-center justify-center h-full text-slate-500 text-base font-medium">
-                        💬 Click Play to start conversation
+                </div>
+
+                {/* Messages Area */}
+                <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
+                    <AnimatePresence initial={false}>
+                        {messages.map((msg, idx) => (
+                            <motion.div
+                                key={idx}
+                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                            >
+                                <div className={`max-w-[80%] p-3 rounded-2xl ${msg.role === 'user'
+                                        ? 'bg-blue-600 text-white rounded-br-sm'
+                                        : 'bg-slate-800 text-slate-200 rounded-bl-sm border border-white/5'
+                                    }`}>
+                                    <p className="text-sm">{msg.text}</p>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
+
+                    {/* Typing Indicator */}
+                    {isTyping && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex justify-start"
+                        >
+                            <div className="bg-slate-800 p-3 rounded-2xl rounded-bl-sm border border-white/5 flex items-center gap-1">
+                                <motion.div animate={{ y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0 }} className="w-1.5 h-1.5 bg-slate-400 rounded-full" />
+                                <motion.div animate={{ y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} className="w-1.5 h-1.5 bg-slate-400 rounded-full" />
+                                <motion.div animate={{ y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }} className="w-1.5 h-1.5 bg-slate-400 rounded-full" />
+                            </div>
+                        </motion.div>
+                    )}
+                </div>
+
+                {/* Input Area (Visual Only) */}
+                <div className="mt-4 pt-4 border-t border-white/10">
+                    <div className="bg-white/5 rounded-full p-3 flex items-center justify-between">
+                        <span className="text-sm text-slate-500 ml-2">Type a message...</span>
+                        <div className="p-2 bg-zim-teal/20 rounded-full">
+                            <Send size={16} className="text-zim-teal" />
+                        </div>
                     </div>
-                )}
+                </div>
             </div>
         </div>
     );
