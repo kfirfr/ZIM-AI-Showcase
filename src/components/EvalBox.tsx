@@ -3,193 +3,341 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SimulationControls, SimulationState } from './SimulationControls';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, CheckCircle2, AlertCircle, Scan, ShieldCheck, BarChart3 } from 'lucide-react';
+import { ShieldCheck, CheckCircle2, Activity, Zap, Award, Search, FileText, Database, Lock } from 'lucide-react';
+import { ClientOnly } from './ClientOnly';
+
+// --- Configuration ---
+const AUDIT_ITEMS = [
+    { id: 'c1', label: 'Identity Authentication', code: 'ZIM_ID_SEC', duration: 1200 },
+    { id: 'c2', label: 'Compliance Disclosure', code: 'REG_CONF', duration: 1500 },
+    { id: 'c3', label: 'Sentiment Analysis', code: 'NLP_SENT', duration: 1300 },
+    { id: 'c4', label: 'Solution Relevance', code: 'KB_MATCH', duration: 1800 },
+    { id: 'c5', label: 'Security Protocols', code: 'ENC_DATA', duration: 1400 },
+];
 
 export const EvalBox = () => {
     const [state, setState] = useState<SimulationState>('idle');
-    const [phase, setPhase] = useState<"scanning" | "checking" | "scoring" | "complete">("scanning");
-    const [checklistIndex, setChecklistIndex] = useState(0);
-    const [score, setScore] = useState(0);
-    const containerRef = useRef<HTMLDivElement>(null);
+    const [phase, setPhase] = useState<"idle" | "scanning" | "auditing" | "complete">("idle");
+    const [currentAuditId, setCurrentAuditId] = useState<string | null>(null);
+    const [auditResults, setAuditResults] = useState<{ [key: string]: boolean }>({});
+    const [auditScore, setAuditScore] = useState(0);
 
-    const checklist = [
-        { id: 1, text: "Greeting & Verification", status: "pass" },
-        { id: 2, text: "Empathy & Tone", status: "pass" },
-        { id: 3, text: "Correct Process Followed", status: "pass" },
-        { id: 4, text: "Compliance Statement", status: "pass" },
-        { id: 5, text: "Resolution Confirmation", status: "pass" },
-    ];
+    // Refs for safe async loop access
+    const stateRef = useRef(state);
+    stateRef.current = state;
+    const isLoopingRef = useRef(false);
 
+    // --- Robust Wait Logic ---
+    const wait = async (ms: number) => {
+        let passed = 0;
+        while (passed < ms) {
+            if (stateRef.current === 'idle') throw new Error("STOPPED");
+            if (stateRef.current === 'playing') passed += 100;
+            await new Promise(r => setTimeout(r, 100));
+        }
+    };
+
+    const waitForPlay = async () => {
+        while (stateRef.current !== 'playing') {
+            if (stateRef.current === 'idle') throw new Error("STOPPED");
+            await new Promise(r => setTimeout(r, 100));
+        }
+    };
+
+    const reset = () => {
+        setPhase("idle");
+        setCurrentAuditId(null);
+        setAuditResults({});
+        setAuditScore(0);
+    };
+
+    // --- Main Simulation Loop ---
     useEffect(() => {
-        let timeout: NodeJS.Timeout;
-        let scoreInterval: NodeJS.Timeout;
-
-        if (state === 'playing') {
-            if (containerRef.current) {
-                setTimeout(() => {
-                    containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 300);
-            }
-            const runSequence = async () => {
-                // Phase 1: Scanning
-                setPhase("scanning");
-                setChecklistIndex(0);
-                setScore(0);
-
-                await new Promise(r => setTimeout(r, 3000));
-
-                // Phase 2: Checking Criteria
-                setPhase("checking");
-                for (let i = 0; i < checklist.length; i++) {
-                    setChecklistIndex(i + 1);
-                    await new Promise(r => setTimeout(r, 800));
-                }
-
-                // Phase 3: Scoring
-                setPhase("scoring");
-                const targetScore = 100;
-                let currentScore = 0;
-                const duration = 2000;
-                const stepTime = 20;
-                const steps = duration / stepTime;
-                const increment = targetScore / steps;
-
-                scoreInterval = setInterval(() => {
-                    currentScore += increment;
-                    if (currentScore >= targetScore) {
-                        currentScore = targetScore;
-                        clearInterval(scoreInterval);
-                        setPhase("complete");
-                        // Reset loop
-                        timeout = setTimeout(runSequence, 3000);
-                    }
-                    setScore(Math.floor(currentScore));
-                }, stepTime);
-            };
-
-            runSequence();
-        } else if (state === 'paused') {
-            // Pause logic could be improved to actually pause the timeline
-        } else if (state === 'idle') {
-            setPhase("scanning");
-            setChecklistIndex(0);
-            setScore(0);
-            if (scoreInterval!) clearInterval(scoreInterval);
+        if (state === 'idle') {
+            reset();
+            return;
         }
 
-        return () => {
-            clearTimeout(timeout);
-            if (scoreInterval) clearInterval(scoreInterval);
-        };
+        if (state === 'playing' && !isLoopingRef.current) {
+            isLoopingRef.current = true;
+
+            const loop = async () => {
+                try {
+                    while (true) {
+                        if (stateRef.current === 'idle') break;
+
+                        // 1. Initial State
+                        reset();
+                        setPhase("idle");
+                        await wait(500);
+
+                        // 2. Scanning Mode
+                        await waitForPlay();
+                        setPhase("scanning");
+                        await wait(2500);
+
+                        // 3. Auditing Mode
+                        await waitForPlay();
+                        setPhase("auditing");
+
+                        for (const item of AUDIT_ITEMS) {
+                            await waitForPlay();
+                            setCurrentAuditId(item.id);
+                            await wait(item.duration);
+
+                            await waitForPlay();
+                            setAuditResults(prev => ({ ...prev, [item.id]: true }));
+                            setAuditScore(prev => prev + 20);
+                            await wait(400); // Small pause between items
+                        }
+
+                        // 4. Complete
+                        await waitForPlay();
+                        setCurrentAuditId(null);
+                        setPhase("complete");
+                        await wait(4000); // Show results
+                    }
+                } catch (e) {
+                    if (e instanceof Error && e.message === "STOPPED") {
+                        // Clean exit
+                    } else {
+                        console.error(e);
+                    }
+                } finally {
+                    isLoopingRef.current = false;
+                }
+            };
+            loop();
+        }
     }, [state]);
 
     return (
-        <div ref={containerRef} className="relative w-full h-full min-h-[400px] bg-slate-950/50 flex flex-col group overflow-hidden">
-            <SimulationControls
-                state={state}
-                onPlay={() => setState('playing')}
-                onPause={() => setState('paused')}
-                onStop={() => setState('idle')}
-            />
+        <ClientOnly>
+            <div className="relative w-full h-full min-h-[450px] bg-slate-950 flex flex-col overflow-hidden border border-violet-500/20 font-sans group">
 
-            <div className="flex-1 p-6 flex flex-col items-center justify-center relative">
-                <AnimatePresence mode="wait">
-                    {/* Phase 1: Scanning Transcript */}
-                    {phase === "scanning" && (
-                        <motion.div
-                            key="scanning"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="w-full max-w-md bg-white/5 border border-white/10 rounded-xl p-6 relative overflow-hidden"
-                        >
-                            <div className="flex items-center gap-3 mb-4 text-slate-300">
-                                <FileText size={20} />
-                                <span className="font-mono text-sm">TRANSCRIPT_#2994.txt</span>
+                {/* Background Infrastructure */}
+                <div className="absolute inset-0 bg-[linear-gradient(rgba(139,92,246,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(139,92,246,0.05)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 opacity-90" />
+
+                {/* Code Telemetry Streams (Animated Background) */}
+                <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden font-mono text-[8px] text-violet-400 p-4">
+                    <motion.div
+                        animate={{ y: [-1000, 0] }}
+                        transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+                        className="whitespace-pre"
+                    >
+                        {Array.from({ length: 100 }).map((_, i) => (
+                            <div key={i} className="mb-1">
+                                {`AUDIT_STREAM_0x${i.toString(16).padStart(4, '0')} >> PROTOCOL: ${i % 2 === 0 ? 'ENCRYPTION_OK' : 'HANDSHAKE_VERIFIED'} >> ${Math.random().toString(36).substring(7)}`}
                             </div>
+                        ))}
+                    </motion.div>
+                </div>
 
-                            <div className="space-y-3 opacity-50 relative">
-                                {[60, 80, 70, 90, 65, 75].map((width, i) => (
-                                    <div key={i} className="h-2 bg-slate-600 rounded-full" style={{ width: `${width}%` }} />
-                                ))}
-                            </div>
+                <SimulationControls
+                    state={state}
+                    onPlay={() => setState('playing')}
+                    onPause={() => setState('paused')}
+                    onStop={() => setState('idle')}
+                />
 
-                            {/* Scanning Beam */}
-                            <motion.div
-                                className="absolute top-0 left-0 w-full h-1 bg-zim-teal/50 shadow-[0_0_15px_rgba(45,212,191,0.8)] z-10"
-                                animate={{ top: ["0%", "100%"] }}
-                                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                            />
+                {/* --- HEADER --- */}
+                <div className="relative z-10 w-full h-14 bg-slate-900/90 backdrop-blur-md border-b border-violet-500/30 flex items-center justify-between px-6 shadow-sm">
+                    <div className="flex items-center gap-4">
+                        <img src="/ZIM80Logo.png" alt="ZIM" className="h-7 w-auto object-contain" />
+                        <div className="h-4 w-px bg-white/20" />
+                        <span className="text-xs font-bold text-violet-400 tracking-[0.2em] uppercase">Audit Intelligence</span>
+                    </div>
 
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-                                <div className="flex flex-col items-center gap-2">
-                                    <Scan size={32} className="text-zim-teal animate-pulse" />
-                                    <span className="text-zim-teal font-bold tracking-widest text-sm">ANALYZING...</span>
+                    <div className="flex gap-4 items-center">
+                        <div className="flex items-center gap-2 px-3 py-1 bg-violet-500/10 border border-violet-500/20 rounded-full text-[10px] text-violet-300">
+                            <Activity size={10} className="animate-pulse" />
+                            LIVE_ANALYSIS
+                        </div>
+                        <div className="w-8 h-8 rounded-full bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
+                            <Lock size={14} className="text-violet-400" />
+                        </div>
+                    </div>
+                </div>
+
+                {/* --- MAIN DASHBOARD AREA --- */}
+                <div className="relative z-10 flex-1 p-6 flex gap-6 h-full">
+
+                    {/* Transcript / Data Feed Section */}
+                    <div className="flex-1 flex flex-col gap-3">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-base font-bold text-white flex items-center gap-2">
+                                <FileText size={16} className="text-violet-400" />
+                                Interactive Transcript
+                            </h3>
+                            <div className="text-[10px] font-mono text-slate-500 tracking-wider">REF: AQ-229-X</div>
+                        </div>
+
+                        <div className="flex-1 bg-slate-900/50 border border-white/5 rounded-2xl p-5 relative overflow-hidden backdrop-blur-sm">
+                            <div className="space-y-3">
+                                <div className="flex gap-3">
+                                    <div className="w-7 h-7 shrink-0 rounded-lg bg-zim-teal/20 border border-zim-teal/30 flex items-center justify-center text-[10px] font-bold text-zim-teal">AI</div>
+                                    <div className="flex-1 text-xs text-slate-300 leading-relaxed bg-white/5 p-2.5 rounded-xl rounded-tl-none">
+                                        I can help you with your booking from Shanghai to Los Angeles. I'll verify your account details for security.
+                                    </div>
+                                </div>
+                                <div className="flex gap-3 justify-end">
+                                    <div className="max-w-[80%] text-xs text-slate-300 leading-relaxed bg-violet-500/10 border border-violet-500/20 p-2.5 rounded-xl rounded-tr-none">
+                                        Yes. My ID is Z-8821. I need to ensure compliance with our logistics disclosure policy.
+                                    </div>
+                                    <div className="w-7 h-7 shrink-0 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center text-[10px] font-bold text-white">US</div>
                                 </div>
                             </div>
-                        </motion.div>
-                    )}
 
-                    {/* Phase 2: Checklist */}
-                    {(phase === "checking" || phase === "scoring" || phase === "complete") && (
+                            {/* Deep Scan Ray */}
+                            <AnimatePresence>
+                                {phase === 'scanning' && (
+                                    <motion.div
+                                        initial={{ top: -100 }}
+                                        animate={{ top: "100%" }}
+                                        exit={{ opacity: 0 }}
+                                        transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
+                                        className="absolute left-0 right-0 h-24 bg-gradient-to-b from-transparent via-violet-500/20 to-transparent pointer-events-none z-20"
+                                    >
+                                        <div className="h-px w-full bg-violet-400/50 shadow-[0_0_20px_rgba(139,92,246,1)]" />
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+                    </div>
+
+                    {/* Audit Checklist HUD Section */}
+                    <div className="w-64 flex flex-col gap-4">
+                        <div className="relative flex-1 bg-slate-900/60 border border-violet-500/20 rounded-2xl p-4 backdrop-blur-xl flex flex-col">
+                            {/* Decorative HUD Elements */}
+                            <div className="absolute -top-1 -right-1 w-8 h-8 border-t border-r border-violet-500/40 rounded-tr-xl" />
+                            <div className="absolute -bottom-1 -left-1 w-8 h-8 border-b border-l border-violet-500/40 rounded-bl-xl" />
+
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="text-[10px] font-bold text-violet-300 tracking-[0.2em] uppercase">Compliance Audit</div>
+                                <ShieldCheck size={14} className="text-violet-400" />
+                            </div>
+
+                            {/* Checklist Items */}
+                            <div className="flex-1 space-y-3">
+                                {AUDIT_ITEMS.map((item) => {
+                                    const isAuditing = currentAuditId === item.id;
+                                    const isVerified = auditResults[item.id];
+
+                                    return (
+                                        <div key={item.id} className="relative">
+                                            <div className={`p-3 rounded-xl border transition-all duration-300 ${isAuditing ? 'bg-violet-500/10 border-violet-500/50 scale-105' :
+                                                isVerified ? 'bg-emerald-500/5 border-emerald-500/20' :
+                                                    'bg-white/5 border-white/5'
+                                                }`}>
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <span className={`text-[10px] font-bold uppercase tracking-wider ${isVerified ? 'text-emerald-400' : 'text-slate-200'}`}>
+                                                        {item.label}
+                                                    </span>
+                                                    {isVerified && <CheckCircle2 size={12} className="text-emerald-400" />}
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="h-1 flex-1 bg-slate-800 rounded-full overflow-hidden">
+                                                        {(isAuditing || isVerified) && (
+                                                            <motion.div
+                                                                initial={{ width: 0 }}
+                                                                animate={{ width: isVerified ? "100%" : "70%" }}
+                                                                transition={{ duration: item.duration / 1000 }}
+                                                                className={`h-full ${isVerified ? 'bg-emerald-400' : 'bg-violet-400 animate-pulse'}`}
+                                                            />
+                                                        )}
+                                                    </div>
+                                                    <span className="text-[8px] font-mono text-slate-500">{item.code}</span>
+                                                </div>
+                                            </div>
+
+                                            {/* Holographic Stamp Animation */}
+                                            <AnimatePresence>
+                                                {isVerified && (
+                                                    <motion.div
+                                                        initial={{ scale: 3, opacity: 0, rotate: -30 }}
+                                                        animate={{ scale: 1, opacity: 1, rotate: 10 }}
+                                                        exit={{ opacity: 0 }}
+                                                        className="absolute -right-2 top-0 pointer-events-none"
+                                                    >
+                                                        <div className="px-2 py-0.5 border-2 border-emerald-400 font-black text-[9px] text-emerald-400 uppercase tracking-tighter rounded bg-emerald-950/80 -rotate-12">
+                                                            PASSED
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Score Meter Footer */}
+                            <div className="mt-6 pt-4 border-t border-white/5">
+                                <div className="flex items-end justify-between mb-2">
+                                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Quality Score</span>
+                                    <span className="text-2xl font-black text-white font-mono">{auditScore}%</span>
+                                </div>
+                                <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                                    <motion.div
+                                        animate={{ width: `${auditScore}%` }}
+                                        className="h-full bg-gradient-to-r from-violet-500 to-emerald-400"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* --- RESULTS OVERLAY --- */}
+                <AnimatePresence>
+                    {phase === 'complete' && (
                         <motion.div
-                            key="checklist"
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="w-full max-w-sm space-y-4"
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            className="absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-8"
                         >
-                            <div className="flex items-center gap-2 mb-6">
-                                <ShieldCheck className="text-zim-teal" size={24} />
-                                <h3 className="text-xl font-bold text-white">Compliance Check</h3>
-                            </div>
+                            <div className="max-w-md w-full bg-slate-900 border border-violet-500/30 rounded-3xl p-8 flex flex-col items-center shadow-[0_0_80px_rgba(139,92,246,0.2)]">
+                                <motion.div
+                                    initial={{ y: 20, opacity: 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    transition={{ delay: 0.2 }}
+                                    className="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center mb-6 shadow-xl shadow-violet-500/20"
+                                >
+                                    <Award size={48} className="text-white" />
+                                </motion.div>
 
-                            <div className="space-y-3">
-                                {checklist.map((item, index) => (
-                                    <motion.div
-                                        key={item.id}
-                                        initial={{ opacity: 0, x: -20 }}
-                                        animate={{
-                                            opacity: index < checklistIndex ? 1 : 0.3,
-                                            x: 0
-                                        }}
-                                        className={`flex items-center justify-between p-3 rounded-lg border ${index < checklistIndex ? "bg-emerald-900/20 border-emerald-500/30" : "bg-white/5 border-white/5"
-                                            }`}
-                                    >
-                                        <span className="text-sm font-medium text-slate-200">{item.text}</span>
-                                        {index < checklistIndex && (
-                                            <motion.div
-                                                initial={{ scale: 0 }}
-                                                animate={{ scale: 1 }}
-                                            >
-                                                <CheckCircle2 size={18} className="text-emerald-400" />
-                                            </motion.div>
-                                        )}
-                                    </motion.div>
-                                ))}
-                            </div>
-                        </motion.div>
-                    )}
+                                <h4 className="text-2xl font-bold text-white mb-2">Audit Complete</h4>
+                                <p className="text-slate-400 text-center text-sm mb-8 leading-relaxed px-4">
+                                    The automated evaluation engine has verified 100% compliance across all quality parameters.
+                                </p>
 
-                    {/* Phase 3 & 4: Scoring Result */}
-                    {(phase === "scoring" || phase === "complete") && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 50 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="absolute bottom-6 right-6 bg-slate-900 border border-zim-teal/50 p-4 rounded-xl shadow-2xl flex items-center gap-4"
-                        >
-                            <div className="p-3 bg-zim-teal/10 rounded-full">
-                                <BarChart3 size={24} className="text-zim-teal" />
-                            </div>
-                            <div>
-                                <div className="text-xs text-slate-400 uppercase tracking-wide">Quality Score</div>
-                                <div className="text-3xl font-bold font-mono text-white">
-                                    {score}<span className="text-zim-teal">%</span>
+                                <div className="grid grid-cols-2 gap-4 w-full mb-8">
+                                    <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+                                        <div className="text-[10px] text-slate-500 font-bold uppercase mb-1">Total Score</div>
+                                        <div className="text-2xl font-black text-white">100/100</div>
+                                    </div>
+                                    <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+                                        <div className="text-[10px] text-slate-500 font-bold uppercase mb-1">Status</div>
+                                        <div className="text-sm font-bold text-emerald-400 flex items-center gap-1">
+                                            <ShieldCheck size={14} /> CERTIFIED
+                                        </div>
+                                    </div>
                                 </div>
+
+                                <motion.div
+                                    animate={{ opacity: [0.5, 1, 0.5] }}
+                                    transition={{ duration: 2, repeat: Infinity }}
+                                    className="text-[10px] font-mono text-violet-400 tracking-[0.3em] uppercase"
+                                >
+                                    Restarting analysis sequence...
+                                </motion.div>
                             </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
+
             </div>
-        </div>
+        </ClientOnly>
     );
 };

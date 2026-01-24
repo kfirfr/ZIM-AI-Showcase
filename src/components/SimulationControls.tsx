@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Play, Pause, RotateCcw } from "lucide-react";
 import { motion } from "framer-motion";
+import { useFeatureCardContext } from "./FeatureCardContext";
 
 export type SimulationState = "idle" | "playing" | "paused";
 
@@ -19,7 +20,65 @@ export const SimulationControls: React.FC<SimulationControlsProps> = ({
     onPause,
     onStop,
 }) => {
-    // Initial state with blurred background and centered PLAY button
+    const { setControls } = useFeatureCardContext();
+
+    // Handle Active Controls Hoisting (Top Right of Feature Card)
+    useEffect(() => {
+        if (state === "idle") {
+            setControls(null);
+            return;
+        }
+
+        setControls(
+            <div className="flex items-center gap-2 mt-[90px] mr-8"> {/* Aligned with Feature Card Title */}
+                {/* Pause/Resume Button */}
+                {state === "playing" ? (
+                    <motion.button
+                        onClick={onPause}
+                        className="group relative rounded-full p-[1px] overflow-hidden transition-transform"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        aria-label="Pause"
+                    >
+                        {/* Animated Gradient Border */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#60a5fa] via-[#34d399] via-[#a78bfa] to-[#fb923c] animate-gradient-shift opacity-80 group-hover:opacity-100" />
+
+                        {/* Inner Content */}
+                        <div className="relative flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/90 group-hover:bg-slate-900/80 transition-colors">
+                            <Pause size={14} className="text-white relative z-10" fill="currentColor" />
+                            <span className="text-[10px] font-bold text-white uppercase tracking-widest relative z-10">Pause</span>
+                        </div>
+                    </motion.button>
+                ) : (
+                    <motion.button
+                        onClick={onPlay}
+                        className="group flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/50 hover:bg-slate-700 transition-colors"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        aria-label="Resume"
+                    >
+                        <Play size={14} className="text-emerald-400" fill="currentColor" />
+                        <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Resume</span>
+                    </motion.button>
+                )}
+
+                {/* Stop/Reset Button */}
+                <motion.button
+                    onClick={onStop}
+                    className="p-1.5 rounded-full bg-slate-800/50 border border-slate-700/30 hover:bg-red-500/20 hover:border-red-500/50 transition-colors group"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    aria-label="Reset"
+                >
+                    <RotateCcw size={14} className="text-slate-400 group-hover:text-red-400" />
+                </motion.button>
+            </div>
+        );
+
+        return () => setControls(null);
+    }, [state, onPlay, onPause, onStop, setControls]);
+
+    // Initial state: Render Big Play Button content in-place (centered in simulation box)
     if (state === "idle") {
         return (
             <div className="absolute inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/30">
@@ -44,55 +103,5 @@ export const SimulationControls: React.FC<SimulationControlsProps> = ({
         );
     }
 
-    // Playing/Paused state with compact controls at bottom
-    return (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2 rounded-full bg-black/60 backdrop-blur-md border border-white/20">
-            {/* Pause Button (when playing) */}
-            {state === "playing" ? (
-                <motion.button
-                    onClick={onPause}
-                    className="group relative flex items-center gap-2 px-5 py-2.5 rounded-full transition-all overflow-hidden"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    aria-label="Pause simulation"
-                >
-                    {/* Gradient Background for Pause */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#60a5fa] via-[#34d399] via-[#a78bfa] to-[#fb923c] opacity-30" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#60a5fa] via-[#34d399] via-[#a78bfa] to-[#fb923c] opacity-0 group-hover:opacity-50 transition-opacity" />
-
-                    <Pause size={16} className="relative z-10 text-white" fill="currentColor" />
-                    <span className="relative z-10 text-xs font-bold text-white uppercase tracking-wide">Pause</span>
-                </motion.button>
-            ) : (
-                /* Resume Button (when paused) */
-                <motion.button
-                    onClick={onPlay}
-                    className="group relative flex items-center gap-2 px-5 py-2.5 rounded-full transition-all overflow-hidden"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    aria-label="Resume simulation"
-                >
-                    {/* Gradient Background for Resume */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#60a5fa] via-[#34d399] via-[#a78bfa] to-[#fb923c] opacity-30" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-[#60a5fa] via-[#34d399] via-[#a78bfa] to-[#fb923c] opacity-0 group-hover:opacity-50 transition-opacity" />
-
-                    <Play size={16} className="relative z-10 text-white" fill="currentColor" />
-                    <span className="relative z-10 text-xs font-bold text-white uppercase tracking-wide">
-                        Resume
-                    </span>
-                </motion.button>
-            )}
-
-            {/* Stop/Reset Button */}
-            <motion.button
-                onClick={onStop}
-                className="p-2 hover:bg-white/10 rounded-full transition-all"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                aria-label="Stop and reset simulation"
-            >
-                <RotateCcw size={16} className="text-slate-400 hover:text-white transition-colors" />
-            </motion.button>
-        </div>
-    );
+    return null;
 };

@@ -37,22 +37,64 @@ export const Navbar = () => {
                         : "bg-transparent border-transparent w-full"
                 )}
             >
-                <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded bg-gradient-to-br from-zim-teal to-blue-600 flex items-center justify-center text-white font-bold text-xs">
-                        Z
-                    </div>
-                    <span className="text-white font-semibold tracking-tight text-sm">ZIM AI SHOWCASE</span>
+                <div className="flex items-center gap-3">
+                    <img
+                        src="/zim80-logo.png"
+                        alt="ZIM Logo"
+                        className="h-10 w-auto object-contain"
+                    />
+                    <div className="w-px h-6 bg-white/20 mx-1" />
+                    <span className="text-white font-semibold tracking-tight text-sm">AI SHOWCASE</span>
                 </div>
 
-                <div className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-300">
-                    <Link href="#features" className="hover:text-zim-teal transition-colors">Capabilities</Link>
-                    <Link href="#metrics" className="hover:text-zim-teal transition-colors">Metrics</Link>
-                    <Link href="#roadmap" className="hover:text-zim-teal transition-colors">Roadmap</Link>
+                <div className="hidden md:flex items-center gap-3">
+                    <a
+                        href="#deployments"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            document.getElementById('deployments')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className="group relative px-4 py-2 rounded-full text-xs font-bold text-white/90 hover:text-white uppercase tracking-[0.15em] cursor-pointer transition-all duration-300 hover:scale-105"
+                    >
+                        <span className="relative z-10">2025 AI</span>
+                        <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 rounded-full transition-all duration-300" />
+                        <div className="absolute inset-0 bg-zim-teal/0 group-hover:bg-zim-teal/20 rounded-full blur-md transition-all duration-300" />
+                    </a>
+                    <a
+                        href="#innovations"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            document.getElementById('innovations')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className="group relative px-4 py-2 rounded-full text-xs font-bold text-white/90 hover:text-white uppercase tracking-[0.15em] cursor-pointer transition-all duration-300 hover:scale-105"
+                    >
+                        <span className="relative z-10">2026 AI</span>
+                        <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 rounded-full transition-all duration-300" />
+                        <div className="absolute inset-0 bg-zim-teal/0 group-hover:bg-zim-teal/20 rounded-full blur-md transition-all duration-300" />
+                    </a>
+                    <a
+                        href="#roadmap"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            document.getElementById('roadmap')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className="group relative px-4 py-2 rounded-full text-xs font-bold text-white/90 hover:text-white uppercase tracking-[0.15em] cursor-pointer transition-all duration-300 hover:scale-105 whitespace-nowrap"
+                    >
+                        <span className="relative z-10">Strategic AI Roadmap</span>
+                        <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 rounded-full transition-all duration-300" />
+                        <div className="absolute inset-0 bg-zim-teal/0 group-hover:bg-zim-teal/20 rounded-full blur-md transition-all duration-300" />
+                    </a>
                 </div>
 
-                <button className="px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/5 text-xs text-white uppercase tracking-wider font-semibold transition-all hover:scale-105 active:scale-95">
-                    Launch Console
-                </button>
+                <a
+                    href="https://zimuccc.netlify.app/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group relative px-5 py-2 rounded-full bg-slate-900/80 hover:bg-slate-800 border border-white/10 hover:border-zim-teal/50 text-[11px] text-slate-300 hover:text-white uppercase tracking-widest font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(34,211,238,0.15)] flex items-center gap-2"
+                >
+                    <span className="w-1.5 h-1.5 rounded-full bg-zim-teal animate-pulse group-hover:shadow-[0_0_8px_#22d3ee]"></span>
+                    Digital Solutions
+                </a>
             </motion.nav>
         </div>
     );
