@@ -217,7 +217,7 @@ export const VisionaryFooter = () => {
                         <div className="h-8 flex items-center">
                             <img src={ZIM_LOGO_URL} alt="ZIM" className="h-full w-auto object-contain opacity-80" />
                         </div>
-                        <div className="quattro-gradient not-italic font-black text-2xl md:text-3xl tracking-tight">
+                        <div className="quattro-gradient font-sans not-italic font-black text-xl md:text-2xl tracking-tight">
                             KFIR FRANK · KFIR@FRANK.KY · 2026
                         </div>
                     </div>
