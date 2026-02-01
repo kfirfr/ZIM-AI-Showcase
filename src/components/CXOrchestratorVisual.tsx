@@ -176,7 +176,7 @@ export const CXOrchestratorVisual = () => {
                     <div className="w-28 h-28 rounded-full bg-slate-900/40 backdrop-blur-sm border border-white/5 flex items-center justify-center relative overflow-hidden shadow-[inset_0_0_20px_rgba(249,115,22,0.2)]">
                         {/* Genesys Logo */}
                         <img
-                            src="/genesys-logo.svg"
+                            src="/genesys-logo-reversed.png"
                             alt="Genesys"
                             className="w-20 h-20 object-contain relative z-10"
                         />
