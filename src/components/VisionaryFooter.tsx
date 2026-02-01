@@ -218,7 +218,7 @@ export const VisionaryFooter = () => {
                             <img src={ZIM_LOGO_URL} alt="ZIM" className="h-full w-auto object-contain opacity-80" />
                         </div>
                         <div className="text-[10px] tracking-[0.3em] uppercase text-white/40">
-                            UC CC Division · 2026
+                            KFIR FRANK · KFIR@FRANK.KY · 2026
                         </div>
                     </div>
 
