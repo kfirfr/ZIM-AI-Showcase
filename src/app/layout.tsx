@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { BackgroundNeuralStars } from "@/components/BackgroundNeuralStars";
 import "./globals.css";
 
@@ -21,7 +22,9 @@ export default function RootLayout({
             <body className={`${inter.variable} ${jetbrainsMono.variable} bg-slate-900 text-white antialiased`}>
                 <BackgroundNeuralStars />
                 {children}
+                <Analytics />
             </body>
         </html>
     );
 }
+
