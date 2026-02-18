@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     title: "ZIM AI Showcase",
     description: "ZIM Integrated Shipping AI Showcase",
     icons: {
-        icon: '/FrankyFavicon.svg',
+        icon: '/icon.svg',
     },
 };
 
