@@ -10,7 +10,7 @@ const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jet
 export const metadata: Metadata = {
     title: "ZIM AI Showcase",
     description: "ZIM Integrated Shipping AI Showcase",
-    icon: {
+    icons: {
         icon: '/FrankyFavicon.svg',
     },
 };
